@@ -14,6 +14,8 @@
  * @author Graham Weldon (http://grahamweldon.com)
  * @license The MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+App::uses('CakeEvent', 'Event');
+
 if (!defined('TWIG_VIEW_CACHE')) {
 	define('TWIG_VIEW_CACHE', CakePlugin::path('TwigView') . 'tmp' . DS . 'views');
 }
@@ -76,8 +78,8 @@ class TwigView extends View {
  */
 	public function __construct(Controller $Controller = null) {
 		$this->templatePaths = App::path('View');
-		$loader = new Twig_Loader_Filesystem($this->templatePaths[0]);
-		$this->Twig = new Twig_Environment($loader, array(
+
+		$this->Twig = new Twig_Environment($this->_getLoader(), array(
 			'cache' => TWIG_VIEW_CACHE,
 			'charset' => strtolower(Configure::read('App.encoding')),
 			'auto_reload' => Configure::read('debug') > 0,
@@ -96,6 +98,24 @@ class TwigView extends View {
 		if (isset($Controller->theme)) {
 			$this->theme = $Controller->theme;
 		}
+	}
+
+	/**
+	 * Get loader
+	 *
+	 * @return Twig_Loader_Filesystem
+	 */
+	protected function _getLoader() {
+		$event = new CakeEvent('TwigView.TwigView.loader', $this, array(
+			'loader' => new Twig_Loader_Filesystem($this->templatePaths[0])
+		));
+		CakeEventManager::instance()->dispatch($event);
+
+		if (isset($event->result['loader'])) {
+			return $event->result['loader'];
+		}
+
+		return $event->data['loader'];
 	}
 
 /**
@@ -117,9 +137,11 @@ class TwigView extends View {
 		}
 
 		ob_start();
+
 		// Setup the helpers from the new Helper Collection
 		$helpers = array();
 		$loaded_helpers = $this->Helpers->loaded();
+
 		foreach($loaded_helpers as $helper) {
 			$name = Inflector::variable($helper);
 			$helpers[$name] = $this->loadHelper($helper);
@@ -128,9 +150,9 @@ class TwigView extends View {
 		if (!isset($_dataForView['cakeDebug'])) {
 			$_dataForView['cakeDebug'] = null;
 		}
+
 		$data = array_merge($_dataForView, $helpers);
 		$data['_view'] = $this;
-
 		$relativeFn = str_replace($this->templatePaths, '', $_viewFn);
 		$template = $this->Twig->loadTemplate($relativeFn);
 		echo $template->render($data);
