@@ -16,25 +16,13 @@
  */
 App::uses('CakeEvent', 'Event');
 
-if (!defined('TWIG_VIEW_CACHE')) {
-	define('TWIG_VIEW_CACHE', CakePlugin::path('TwigView') . 'tmp' . DS . 'views');
-}
-
 $twigPath = CakePlugin::path('TwigView');
 
 // overwrite twig classes (thanks to autoload, no problem)
-require_once($twigPath . 'Lib' . DS . 'Twig_Node_Element.php');
-require_once($twigPath . 'Lib' . DS . 'Twig_Node_Trans.php');
-require_once($twigPath . 'Lib' . DS . 'Twig_TokenParser_Trans.php');
+// require_once($twigPath . 'Lib' . DS . 'Twig_Node_Element.php');
+// require_once($twigPath . 'Lib' . DS . 'Twig_Node_Trans.php');
+// require_once($twigPath . 'Lib' . DS . 'Twig_TokenParser_Trans.php');
 
-// my custom cake extensions
-require_once($twigPath . 'Lib' . DS . 'Twig_Extension_I18n.php');
-require_once($twigPath . 'Lib' . DS . 'Twig_Extension_Ago.php');
-require_once($twigPath . 'Lib' . DS . 'Twig_Extension_Basic.php');
-require_once($twigPath . 'Lib' . DS . 'Twig_Extension_Number.php');
-
-// get twig core extension (overwrite trans block)
-require_once($twigPath . 'Lib' . DS . 'CoreExtension.php');
 
 /**
  * TwigView for CakePHP
@@ -80,18 +68,16 @@ class TwigView extends View {
 		$this->templatePaths = App::path('View');
 
 		$this->Twig = new Twig_Environment($this->_getLoader(), array(
-			'cache' => TWIG_VIEW_CACHE,
+			'cache' => Configure::read('TwigView.cache'),
 			'charset' => strtolower(Configure::read('App.encoding')),
 			'auto_reload' => Configure::read('debug') > 0,
 			'autoescape' => false,
 			'debug' => Configure::read('debug') > 0
 		));;
 
-		$this->Twig->addExtension(new CoreExtension);
-		$this->Twig->addExtension(new Twig_Extension_I18n);
-		$this->Twig->addExtension(new Twig_Extension_Ago);
-		$this->Twig->addExtension(new Twig_Extension_Basic);
-		$this->Twig->addExtension(new Twig_Extension_Number);
+		CakeEventManager::instance()->dispatch(new CakeEvent('TwigView.TwigView.construct', $this, array(
+			'Twig' => $this->Twig
+		)));
 
 		parent::__construct($Controller);
 
