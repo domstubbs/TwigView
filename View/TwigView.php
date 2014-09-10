@@ -59,6 +59,22 @@ class TwigView extends View {
 	public $templatePaths = array();
 
 /**
+ * Twig settings
+ *
+ * @var array
+ */
+	protected $_settings = array(
+		'cache'               => null,
+		'charset'             => null,
+		'auto_reload'         => null,
+		'debug'               => null,
+		'autoescape'          => false,
+		'optimizations'       => -1,
+		'base_template_class' => 'Twig_Template',
+		'strict_variables'    => false
+	);
+
+/**
  * Constructor
  * Overridden to provide Twig loading
  *
@@ -67,13 +83,14 @@ class TwigView extends View {
 	public function __construct(Controller $Controller = null) {
 		$this->templatePaths = App::path('View');
 
-		$this->Twig = new Twig_Environment($this->_getLoader(), array(
-			'cache' => Configure::read('TwigView.cache'),
-			'charset' => strtolower(Configure::read('App.encoding')),
+		$this->_settings = Hash::merge($this->_settings, array(
+			'cache'       => CakePlugin::path('TwigView') . 'tmp' . DS . 'views',
+			'charset'     => strtolower(Configure::read('App.encoding')),
 			'auto_reload' => Configure::read('debug') > 0,
-			'autoescape' => false,
-			'debug' => Configure::read('debug') > 0
-		));
+			'debug'       => Configure::read('debug') > 0,
+		), Configure::read('TwigView.options'));
+
+		$this->Twig = new Twig_Environment($this->_getLoader(), $this->_settings);
 
 		CakeEventManager::instance()->dispatch(new CakeEvent('TwigView.TwigView.construct', $this, array(
 			'Twig' => $this->Twig
