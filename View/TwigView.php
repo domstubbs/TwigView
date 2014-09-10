@@ -35,19 +35,21 @@ $twigPath = CakePlugin::path('TwigView');
  */
 class TwigView extends View {
 
+	const EXT = '.tpl';
+
 /**
  * File extension
  *
  * @var string
  */
-	public $ext = '.tpl';
+	public $ext = self::EXT;
 
 /**
  * Twig Environment Instance
  *
  * @var Twig_Environment
  */
-	public $Twig;
+	protected $_twig;
 
 /**
  * Collection of paths.
@@ -56,7 +58,7 @@ class TwigView extends View {
  * @todo overwrite getFilename()
  * @var array
  */
-	public $templatePaths = array();
+	protected $_templatePaths = array();
 
 /**
  * Twig settings
@@ -83,7 +85,8 @@ class TwigView extends View {
 	public function __construct(Controller $Controller = null) {
 		parent::__construct($Controller);
 
-		$this->templatePaths = App::path('View');
+		$this->ext = self::EXT;
+		$this->_templatePaths = App::path('View');
 
 		$this->_settings = Hash::merge($this->_settings, array(
 			'cache'       => CakePlugin::path('TwigView') . 'tmp' . DS . 'views',
@@ -110,7 +113,7 @@ class TwigView extends View {
 	 */
 	protected function _getLoader() {
 		$event = new CakeEvent('TwigView.TwigView.loader', $this, array(
-			'loader' => new Twig_Loader_Filesystem($this->templatePaths[0])
+			'loader' => new Twig_Loader_Filesystem($this->_templatePaths[0])
 		));
 		CakeEventManager::instance()->dispatch($event);
 
@@ -158,7 +161,7 @@ class TwigView extends View {
 
 		$data = array_merge($_dataForView, $helpers);
 		$data['_view'] = $this;
-		$relativeFn = str_replace($this->templatePaths, '', $_viewFn);
+		$relativeFn = str_replace($this->_templatePaths, '', $_viewFn);
 		$template = $this->Twig->loadTemplate($relativeFn);
 		echo $template->render($data);
 		return ob_get_clean();
