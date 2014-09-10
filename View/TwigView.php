@@ -73,7 +73,7 @@ class TwigView extends View {
 			'auto_reload' => Configure::read('debug') > 0,
 			'autoescape' => false,
 			'debug' => Configure::read('debug') > 0
-		));;
+		));
 
 		CakeEventManager::instance()->dispatch(new CakeEvent('TwigView.TwigView.construct', $this, array(
 			'Twig' => $this->Twig
@@ -107,8 +107,8 @@ class TwigView extends View {
 /**
  * Render the view
  *
- * @param string $_viewFn
- * @param string $_dataForView
+ * @param string $_viewFn Filename of the view
+ * @param string $_dataForView Data to include in the rendered view
  * @return void
  */
 	protected function _render($_viewFn, $_dataForView = array()) {
@@ -128,7 +128,7 @@ class TwigView extends View {
 		$helpers = array();
 		$loaded_helpers = $this->Helpers->loaded();
 
-		foreach($loaded_helpers as $helper) {
+		foreach ($loaded_helpers as $helper) {
 			$name = Inflector::variable($helper);
 			$helpers[$name] = $this->loadHelper($helper);
 		}
