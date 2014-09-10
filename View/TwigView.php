@@ -68,7 +68,7 @@ class TwigView extends View {
 		'charset'             => null,
 		'auto_reload'         => null,
 		'debug'               => null,
-		'autoescape'          => false,
+		'autoescape'          => 'html',
 		'optimizations'       => -1,
 		'base_template_class' => 'Twig_Template',
 		'strict_variables'    => false
@@ -81,6 +81,8 @@ class TwigView extends View {
  * @param Controller $Controller Controller
  */
 	public function __construct(Controller $Controller = null) {
+		parent::__construct($Controller);
+
 		$this->templatePaths = App::path('View');
 
 		$this->_settings = Hash::merge($this->_settings, array(
@@ -95,8 +97,6 @@ class TwigView extends View {
 		CakeEventManager::instance()->dispatch(new CakeEvent('TwigView.TwigView.construct', $this, array(
 			'Twig' => $this->Twig
 		)));
-
-		parent::__construct($Controller);
 
 		if (isset($Controller->theme)) {
 			$this->theme = $Controller->theme;
@@ -143,12 +143,14 @@ class TwigView extends View {
 
 		// Setup the helpers from the new Helper Collection
 		$helpers = array();
-		$loaded_helpers = $this->Helpers->loaded();
 
-		foreach ($loaded_helpers as $helper) {
-			$name = Inflector::variable($helper);
-			$helpers[$name] = $this->loadHelper($helper);
-		}
+		// Disable automatic helper loading for now - we'll flesh out extensions as necessary
+		// $loaded_helpers = $this->Helpers->loaded();
+
+		// foreach ($loaded_helpers as $helper) {
+		// 	$name = Inflector::variable($helper);
+		// 	$helpers[$name] = $this->loadHelper($helper);
+		// }
 
 		if (!isset($_dataForView['cakeDebug'])) {
 			$_dataForView['cakeDebug'] = null;
