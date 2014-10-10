@@ -32,6 +32,9 @@ class Twig_Extension_View extends Twig_Extension {
 			new Twig_SimpleFunction('assign', array($view, 'assign'), array('is_safe' => array('html'))),
 			new Twig_SimpleFunction('element', array($view, 'element'), array('is_safe' => array('html'))),
 			new Twig_SimpleFunction('fetch', array($view, 'fetch'), array('is_safe' => array('html'))),
+			new Twig_SimpleFunction('block_start', array($view, 'start'), array('is_safe' => array('html'))),
+			new Twig_SimpleFunction('block_end', array($view, 'end'), array('is_safe' => array('html'))),
+			new Twig_SimpleFunction('append', array($view, 'append'), array('is_safe' => array('html'))),
 			new Twig_SimpleFunction('view_*', function ($name) use ($view) {
 				$arguments = array_slice(func_get_args(), 1);
 				$name = Inflector::camelize($name);
