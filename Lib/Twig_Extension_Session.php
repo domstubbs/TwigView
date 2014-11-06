@@ -1,5 +1,6 @@
 <?php
 App::uses('HtmlHelper', 'View/Helper');
+App::uses('SessionHelper', 'View/Helper');
 App::uses('Inflector', 'Utility');
 
 class Twig_Extension_Session extends Twig_Extension {

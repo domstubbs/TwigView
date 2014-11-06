@@ -18,12 +18,6 @@ App::uses('CakeEvent', 'Event');
 
 $twigPath = CakePlugin::path('TwigView');
 
-// overwrite twig classes (thanks to autoload, no problem)
-// require_once($twigPath . 'Lib' . DS . 'Twig_Node_Element.php');
-// require_once($twigPath . 'Lib' . DS . 'Twig_Node_Trans.php');
-// require_once($twigPath . 'Lib' . DS . 'Twig_TokenParser_Trans.php');
-
-
 /**
  * TwigView for CakePHP
  *
@@ -95,10 +89,10 @@ class TwigView extends View {
 			'debug'       => Configure::read('debug') > 0,
 		), Configure::read('TwigView.options'));
 
-		$this->Twig = new Twig_Environment($this->_getLoader(), $this->_settings);
+		$this->_twig = new Twig_Environment($this->_getLoader(), $this->_settings);
 
 		CakeEventManager::instance()->dispatch(new CakeEvent('TwigView.TwigView.construct', $this, array(
-			'Twig' => $this->Twig
+			'Twig' => $this->_twig
 		)));
 
 		if (isset($Controller->theme)) {
@@ -106,11 +100,11 @@ class TwigView extends View {
 		}
 	}
 
-	/**
-	 * Get loader
-	 *
-	 * @return Twig_Loader_Filesystem
-	 */
+/**
+ * Get loader
+ *
+ * @return Twig_Loader_Filesystem
+ */
 	protected function _getLoader() {
 		$event = new CakeEvent('TwigView.TwigView.loader', $this, array(
 			'loader' => new Twig_Loader_Filesystem($this->_templatePaths[0])
@@ -162,8 +156,16 @@ class TwigView extends View {
 		$data = array_merge($_dataForView, $helpers);
 		$data['_view'] = $this;
 		$relativeFn = str_replace($this->_templatePaths, '', $_viewFn);
-		$template = $this->Twig->loadTemplate($relativeFn);
-		echo $template->render($data);
+		echo $this->_twig->loadTemplate($relativeFn)->render($data);
 		return ob_get_clean();
+	}
+
+/**
+ * Get Twig instance
+ *
+ * @return Twig_Environment
+ */
+	public function getTwig() {
+		return $this->_twig;
 	}
 }
