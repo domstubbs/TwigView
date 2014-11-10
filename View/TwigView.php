@@ -119,45 +119,56 @@ class TwigView extends View {
 	}
 
 /**
- * Render the view
+ * Render the view, plus any parent/extended views
  *
- * @param string $_viewFn Filename of the view
- * @param string $_dataForView Data to include in the rendered view
- * @return void
+ * @param string $viewFile Filename of the view
+ * @param array $data Data to include in rendered view. If empty the current View::$viewVars will be used.
+ * @return string Rendered output
+ * @throws CakeException when a block is left open.
  */
-	protected function _render($_viewFn, $_dataForView = array()) {
-		$isCtpFile = (substr($_viewFn, -3) === 'ctp');
-
-		if (empty($_dataForView)) {
-			$_dataForView = $this->viewVars;
+	protected function _render($viewFile, $data = array()) {
+		if (empty($data)) {
+			$data = $this->viewVars;
 		}
+
+		$isCtpFile = (substr($viewFile, -3) === 'ctp');
 
 		if ($isCtpFile) {
-			return parent::_render($_viewFn, $_dataForView);
+			return parent::_render($viewFile, $data);
 		}
 
-		ob_start();
+		$this->_current = $viewFile;
+		$initialBlocks = count($this->Blocks->unclosed());
 
-		// Setup the helpers from the new Helper Collection
-		$helpers = array();
+		$eventManager = $this->getEventManager();
+		$beforeEvent = new CakeEvent('View.beforeRenderFile', $this, array($viewFile));
 
-		// Disable automatic helper loading for now - we'll flesh out extensions as necessary
-		// $loaded_helpers = $this->Helpers->loaded();
+		$eventManager->dispatch($beforeEvent);
 
-		// foreach ($loaded_helpers as $helper) {
-		// 	$name = Inflector::variable($helper);
-		// 	$helpers[$name] = $this->loadHelper($helper);
-		// }
-
-		if (!isset($_dataForView['cakeDebug'])) {
-			$_dataForView['cakeDebug'] = null;
-		}
-
-		$data = array_merge($_dataForView, $helpers);
 		$data['_view'] = $this;
-		$relativeFn = str_replace($this->_templatePaths, '', $_viewFn);
-		echo $this->_twig->loadTemplate($relativeFn)->render($data);
-		return ob_get_clean();
+		$content = $this->_twig->loadTemplate(str_replace($this->_templatePaths, '', $viewFile))->render($data);
+
+		$afterEvent = new CakeEvent('View.afterRenderFile', $this, array($viewFile, $content));
+
+		$afterEvent->modParams = 1;
+		$eventManager->dispatch($afterEvent);
+		$content = $afterEvent->data[1];
+
+		if (isset($this->_parents[$viewFile])) {
+			$this->_stack[] = $this->fetch('content');
+			$this->assign('content', $content);
+
+			$content = $this->_render($this->_parents[$viewFile]);
+			$this->assign('content', array_pop($this->_stack));
+		}
+
+		$remainingBlocks = count($this->Blocks->unclosed());
+
+		if ($initialBlocks !== $remainingBlocks) {
+			throw new CakeException(__d('cake_dev', 'The "%s" block was left open. Blocks are not allowed to cross files.', $this->Blocks->active()));
+		}
+
+		return $content;
 	}
 
 /**
