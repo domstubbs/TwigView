@@ -26,20 +26,28 @@ class Twig_Extension_View extends Twig_Extension {
  * {@inheritDoc}
  */
 	public function getFunctions() {
-		$view = $this->_view;
+		$rootFunctions = array('element', 'elementExists', 'getVars', 'extend', 'set', 'get', 'blocks');
+		$blockFunctions = array('start', 'startIfEmpty', 'end', 'assign', 'fetch', 'append', 'prepend');
 
-		return array(
-			new Twig_SimpleFunction('assign', array($view, 'assign'), array('is_safe' => array('html'))),
-			new Twig_SimpleFunction('element', array($view, 'element'), array('is_safe' => array('html'))),
-			new Twig_SimpleFunction('fetch', array($view, 'fetch'), array('is_safe' => array('html'))),
-			new Twig_SimpleFunction('block_start', array($view, 'start'), array('is_safe' => array('html'))),
-			new Twig_SimpleFunction('block_end', array($view, 'end'), array('is_safe' => array('html'))),
-			new Twig_SimpleFunction('append', array($view, 'append'), array('is_safe' => array('html'))),
-			new Twig_SimpleFunction('view_*', function ($name) use ($view) {
-				$arguments = array_slice(func_get_args(), 1);
-				$name = Inflector::camelize($name);
-				return call_user_func_array(array($view, $name), $arguments);
-			}, array('is_safe' => array('html')))
-		);
+		$fns = array();
+		foreach ($rootFunctions as $fn) {
+			$fns[] = $this->_buildFunction($fn, $fn);
+		}
+		foreach ($blockFunctions as $fn) {
+			$fns[] = $this->_buildFunction('block_' . Inflector::underscore($fn), $fn);
+		}
+
+		return $fns;
+	}
+
+/**
+ * Generate a Twig function
+ *
+ * @param string $name Function name
+ * @param string $callable View method to call
+ * @return Twig_SimpleFunction
+ */
+	protected function _buildFunction($name, $callable) {
+		return new Twig_SimpleFunction($name, array($this->_view, $callable), array('is_safe' => array('html')));
 	}
 }
