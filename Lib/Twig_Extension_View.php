@@ -31,7 +31,7 @@ class Twig_Extension_View extends Twig_Extension {
 
 		$fns = array();
 		foreach ($rootFunctions as $fn) {
-			$fns[] = $this->_buildFunction($fn, $fn);
+			$fns[] = $this->_buildFunction(Inflector::underscore($fn), $fn);
 		}
 		foreach ($blockFunctions as $fn) {
 			$fns[] = $this->_buildFunction('block_' . Inflector::underscore($fn), $fn);
