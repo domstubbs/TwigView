@@ -1,6 +1,7 @@
 <?php
 App::uses('HtmlHelper', 'View/Helper');
 App::uses('SessionHelper', 'View/Helper');
+App::uses('FlashHelper', 'View/Helper');
 App::uses('Inflector', 'Utility');
 
 class Twig_Extension_Session extends Twig_Extension {
@@ -28,6 +29,7 @@ class Twig_Extension_Session extends Twig_Extension {
  */
 	public function getFunctions() {
 		$session = new SessionHelper($this->_view);
+		$flash = new FlashHelper($this->_view);
 
 		return array(
 			new Twig_SimpleFunction('session_read', array($session, 'read')),
@@ -35,6 +37,7 @@ class Twig_Extension_Session extends Twig_Extension {
 			new Twig_SimpleFunction('session_error', array($session, 'error')),
 			new Twig_SimpleFunction('session_valid', array($session, 'valid')),
 			new Twig_SimpleFunction('session_flash', array($session, 'flash'), array('is_safe' => array('html'))),
+			new Twig_SimpleFunction('flash_render', array($flash, 'render'), array('is_safe' => array('html'))),
 		);
 	}
 }
