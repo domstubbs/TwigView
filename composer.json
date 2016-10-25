@@ -10,7 +10,7 @@
 	],
 	"require": {
 		"php": ">=5.2.4",
-		"twig/twig": "1.16.*",
+		"twig/twig": "1.26.*",
 		"composer/installers": "*"
 	}
 }
