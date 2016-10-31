@@ -21,19 +21,17 @@ class Twig_Extension_Basic extends Twig_Extension {
  */
 	public function getFilters() {
 		return array(
-			'debug' => new Twig_Filter_Function('debug'),
-			'pr'    => new Twig_Filter_Function('pr'),
-			'low'   => new Twig_Filter_Function('low'),
-			'up'    => new Twig_Filter_Function('up'),
-			'env'   => new Twig_Filter_Function('env'),
+			new Twig_SimpleFilter('debug', 'debug'),
+			new Twig_SimpleFilter('pr', 'pr'),
+			new Twig_SimpleFilter('env', 'env')
 		);
 	}
 
 /**
-* Returns the name of the extension.
-*
-* @return string The extension name
-*/
+ * Returns the name of the extension.
+ *
+ * @return string The extension name
+ */
 	public function getName() {
 		return 'basic';
 	}

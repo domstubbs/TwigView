@@ -30,8 +30,8 @@ class TwigViewConstructListener implements CakeEventListener {
 		$view = $event->subject;
 
 		$twig = $event->data['Twig'];
-		$twig->addExtension(new Twig_Extension_Ago);
-		$twig->addExtension(new Twig_Extension_Basic);
+		$twig->addExtension(new Twig_Extension_Ago($view));
+		$twig->addExtension(new Twig_Extension_Basic($view));
 		$twig->addExtension(new Twig_Extension_Form($view));
 		$twig->addExtension(new Twig_Extension_Html($view));
 		$twig->addExtension(new Twig_Extension_I18n);
